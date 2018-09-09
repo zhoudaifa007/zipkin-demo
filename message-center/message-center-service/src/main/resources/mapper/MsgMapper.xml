@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.frank.cloud.message.service.dao.MsgDao">
+
+	<!-- 新增消息 -->
+	<insert id="insertMsg" parameterType="hashmap">
+		INSERT INTO t_message
+		(title,content,type,create_time,author,article_id,comment_id)
+		VALUES (
+		#{title},
+		#{content},
+		#{type},
+		#{createTime},
+		#{author},
+		#{articleId},
+		#{commentId}
+		)
+		<selectKey resultType="Long" order="AFTER" keyProperty="id">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+	</insert>
+
+	<!-- 新增用户消息 -->
+	<insert id="insertUserMsg" parameterType="hashmap">
+		INSERT INTO t_user_message
+		(user_id,message_id,status)
+		VALUES (
+		#{userId},
+		#{msgId},
+		#{status}
+		)
+		<selectKey resultType="Long" order="AFTER" keyProperty="id">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+	</insert>
+
+	<!-- 根据条件获取用户消息信息 -->
+	<select id="queryByCondition" parameterType="hashmap"
+		resultType="com.frank.cloud.message.common.model.DO.MessageDO">
+		SELECT t2.id messageId,
+		t1.title title,
+		t1.content content,
+		case when
+		t1.type = 3 then "admin"
+		when t1.type = 7 then "admin"
+		when t1.type = 5
+		then "版主"
+		else t3.nick_name end author,
+		t3.user_id userId,
+		t3.avatar avator,
+		t1.article_id articleId,
+		t1.comment_id commentId,
+		date_format(t1.create_time,'%Y-%c-%d %H:%i:%s')
+		createTime,
+		t2.status status
+		FROM t_message t1,
+		t_user_message t2,
+		t_bbs_user t3
+		WHERE t1.id = t2.message_id
+		AND t1.author = t3.user_id
+		AND
+		t1.status = 1
+		<if test="status == null">AND t2.status in (1,3)</if>
+		<if test="status != null">AND t2.status = #{status}</if>
+		<if test="userId != null">AND t2.user_id = #{userId}</if>
+		<if test="type == 3">AND t1.type in (3,5,6,7)</if>
+		<if test="type != null and type != 3">AND t1.type = #{type}</if>
+		order by t1.create_time DESC
+		limit #{index},#{pageSize}
+	</select>
+
+	<select id="getAdminMsg" parameterType="hashmap"
+		resultType="com.frank.cloud.message.common.model.DO.AdminMsgDO">
+		SELECT id,title, content, date_format(create_time,'%Y-%c-%d %H:%i:%s') createTime
+		FROM t_message
+		WHERE
+		status = 1
+		<if test="userId != null">AND author = #{userId}</if>
+		<if test="type != null">AND type = #{type}</if>
+		order by create_time desc
+		limit #{index},#{pageSize}
+	</select>
+
+	<select id="countAdminMsg" parameterType="hashmap" resultType="Integer">
+		SELECT count(id)
+		FROM t_message
+		WHERE status = 1
+		<if test="userId != null">AND author = #{userId}</if>
+		<if test="type != null">AND type = #{type}</if>
+	</select>
+
+	<select id="getMsgToUser" parameterType="long" resultType="String">
+		SELECT t1.nick_name
+		FROM t_bbs_user t1,
+		t_user_message t2
+		WHERE
+		t1.user_id = t2.user_id
+		AND t2.message_id = #{id}
+	</select>
+
+	<!-- 根据条件获取用户消息信息 -->
+	<select id="countByCondition" parameterType="hashmap"
+		resultType="Integer">
+		SELECT count(t2.id)
+		FROM t_message t1, t_user_message t2
+		WHERE t1.id =
+		t2.message_id
+		AND t1.status = 1
+		<if test="status == null">AND t2.status in (1,3)</if>
+		<if test="status != null">AND t2.status = #{status}</if>
+		<if test="userId != null">AND t2.user_id = #{userId}</if>
+		<if test="type == 3">AND t1.type in (3,5,6,7)</if>
+		<if test="type != null and type != 3">AND t1.type = #{type}</if>
+	</select>
+
+	<!-- 阅读或是删除 -->
+	<update id="updateMsg" parameterType="hashmap">
+		UPDATE t_user_message
+		set status = #{status}
+		WHERE id in
+		<foreach collection="ids" item="item" index="index" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+	<update id="updateAllMsg" parameterType="hashmap">
+		UPDATE t_user_message
+		set status = #{status}
+		<where>
+			<if test="type != null and type != 3">
+				message_id in (SELECT id FROM t_message WHERE type =
+				#{type})
+			</if>
+			<if test="type == 3">
+				message_id in (SELECT id FROM t_message WHERE type in
+				(3,5,6,7))
+			</if>
+			<if test="userId != null">AND user_id = #{userId}</if>
+			<if test="messageId != null">AND message_id = #{messageId}</if>
+		</where>
+	</update>
+
+	<select id="getAllUser" resultType="String">
+		SELECT user_id FROM
+		t_bbs_user
+	</select>
+
+	<delete id="deleteMsg" parameterType="long">
+		UPDATE t_message SET status
+		= 2 WHERE id = #{id}
+	</delete>
+
+	<delete id="deleteUserMsg" parameterType="long">
+		UPDATE t_user_message
+		SET status = 2 WHERE message_id = #{id}
+	</delete>
+
+	<select id="getReplyById" parameterType="long"
+		resultType="com.frank.cloud.message.common.model.DO.ReplyDO">
+		SELECT id replyId,
+		comment_id commentId,
+		content content,
+		anonymous anonymous,
+		parent_id parentId
+		FROM t_bbs_reply
+		WHERE id = #{id}
+	</select>
+
+	<select id="getCommentById" parameterType="long" resultType="com.frank.cloud.message.common.model.DO.CommentDO">
+		SELECT id,content,anonymous
+		FROM t_bbs_comment
+		WHERE id = #{id}
+	</select>
+
+	<select id="getForumId" parameterType="long" resultType="Long">
+		SELECT forum_id FROM t_bbs_article WHERE id = #{id}
+	</select>
+</mapper>

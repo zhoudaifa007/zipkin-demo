@@ -1,0 +1,84 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8111/eureka/
+pagehelper:
+  helperDialect: mysql
+  params: count=countSql
+  reasonable: true
+  supportMethodsArguments: true
+server:
+  port: 8085
+feign:
+  hystrix:
+    enabled: true
+access:
+  urls: /v1/bbs/*
+sysConfig:
+  cache_time: 234
+  ucurl: http://127.0.0.1:8089
+  ucuser: /v1/uc/service/group/get/user/by/id
+  serverId: S00006
+  imagePath: http://123.58.34.245:12420
+  filePath: D:\\
+  fileAppKey: 515334dda352707ec919aaf0708d0d28
+  fileAppId: 10002
+  fileurl: http://127.0.0.1:12420
+  fileUpload: /mimg/v1/image/upload
+  fileshard: /mimg/v1/image/shard
+  fileDone: /mimg/v1/image/done
+  fileScale: /mimg/v1/image/scale
+  fileGetUrl: /mimg/v1/image/v/
+  urlSuffix: ?appid=10002&appkey=515334dda352707ec919aaf0708d0d28
+  msg:
+    globelTop:
+      title: 您的帖子已经被全局置顶
+      content: 您的<a href = "#/forum/%s/detail/%s">%s</a>已经被全局置顶，积分+25
+    top:
+      title: 您的帖子已经被置顶
+      content: 您的<a href = "#/forum/%s/detail/%s">%s</a>已经被置顶，积分+20
+    essence:
+      title: 您的帖子已经被加精
+      content: 您的<a href = "#/forum/%s/detail/%s">%s</a>已经被加精，积分+20
+    hot:
+      title: 您的帖子成为热门帖
+      content: 您的<a href = "#/forum/%s/detail/%s">%s</a>成为热门帖，积分+20
+    followed:
+      title: 您关注的帖子%s有新的动态
+      content: 你关注的帖子<a href = "#/forum/%s/detail/%s">%s</a>被%s了，快来围观吧
+    delete:
+      title: 您的%s被删除
+      art: 您发表的%s被%s删除，点击查看详情；
+      comment: 您在%s发表的评论被角色%s删除，点击查看详情。
+      reply: 您在%s发表的评回复被角色%s删除，点击查看详情。
+    edit:
+      title: 您的帖子被修改了
+      content: 你发表的帖子<a href = "#/forum/%s/detail/%s">%s</a>被%s修改了，点击查看详情
+spring:
+  application:
+    name: core-center
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    password: root
+    url: jdbc:mysql://127.0.0.1:3306/bbs?useUnicode=true&characterEncoding=utf8
+    username: root
+  redis:
+    database: 1
+    host: 127.0.0.1
+    password: ''
+    pool:
+      max-active: 8
+      max-idle: 8
+      max-wait: -1
+      min-idle: 0
+    port: 6379
+    timeout: 0
+  sleuth:
+    enabled: true
+    sampler:
+      probability: 1.0
+  zipkin:
+    base-url: http://localhost:9411/
+
+logging:
+  config: F:\callChain\zipkin-demo\core-center\core-main\src\main\resources\logback.xml

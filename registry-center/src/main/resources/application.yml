@@ -1,0 +1,14 @@
+eureka:
+    client:
+        fetch-registry: false
+        register-with-eureka: false
+        serviceUrl:
+            defaultZone: http://localhost:8111/eureka/
+    instance:
+        hostname: node1
+server:
+    port: 8111
+
+#日志
+logging:
+    config: F:\callChain\zipkin-demo\registry-center\src\main\resources\logback.xml

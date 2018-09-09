@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.frank.cloud.bbs.core.service.dao.ImageDao">
+
+
+    <insert id="saveImageInfo" parameterType="com.frank.cloud.bbs.core.common.model.DO.ImageDO">
+        INSERT INTO t_bbs_image
+        (image_id,image_url,ref_id,ref_type,create_time,update_time)
+        VALUES (
+        #{imageId},
+        #{imageUrl},
+        #{refId},
+        #{refType},
+        #{createTime},
+        #{updateTime}
+        )
+        <selectKey resultType="Long" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() AS id
+        </selectKey>
+    </insert>
+
+    <update id="updateImageInfo" parameterType="com.frank.cloud.bbs.core.common.model.DO.ImageDO">
+            update t_bbs_image
+            SET
+            ref_id=#{refId},
+            ref_type=#{refType},
+            update_time = #{updateTime}
+            where image_id = #{imageId}
+    </update>
+
+    <select id="getImageUrl" parameterType="com.frank.cloud.bbs.core.common.model.DO.ImageDO" resultType="String">
+        SELECT t1.image_url
+        FROM t_bbs_image t1
+        WHERE
+        t1.ref_id=#{refId} AND t1.ref_type=#{refType} AND t1.delete_tag=0
+        ORDER BY id
+    </select>
+
+    <select id="getImageInfo" parameterType="com.frank.cloud.bbs.core.common.model.DO.ImageDO" resultType="com.frank.cloud.bbs.core.common.model.DO.ImageDO">
+        SELECT
+        image_id imageId,
+        image_url imageUrl
+        FROM t_bbs_image
+        WHERE
+        ref_id=#{refId} AND ref_type=#{refType} AND delete_tag=0
+        ORDER BY id
+    </select>
+
+    <select id="getImageIds" parameterType="com.frank.cloud.bbs.core.common.model.DO.ImageDO" resultType="String">
+        SELECT t1.image_id
+        FROM t_bbs_image t1
+        WHERE
+        t1.ref_id=#{refId} AND t1.ref_type=#{refType} AND t1.delete_tag=0
+        ORDER BY id
+    </select>
+
+    <update id="deleteImageByImageId" parameterType="List">
+        UPDATE t_bbs_image SET delete_tag = 1
+        WHERE image_id IN
+        <foreach collection="list" item="imageId" open="(" close=")" separator=",">
+            #{imageId}
+        </foreach>
+    </update>
+</mapper>

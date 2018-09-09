@@ -1,0 +1,58 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8111/eureka/
+  instance:
+    prefer-ip-address: true
+access:
+  urls: /v1/bbs/*
+mybatis:
+  mapperLocations: classpath:mapper/*.xml
+  typeAliasesPackage: com.frank.cloud.injection.sink.common.model.DO
+pagehelper:
+  helperDialect: mysql
+  params: count=countSql
+  reasonable: true
+  supportMethodsArguments: true
+server:
+  port: 8090
+sysConfig:
+  title: 你的说的%s基于是这
+  cache_time: 172800
+  appId: xxx
+  appKey: xxx
+  sso:
+    url: http://127.0.0.1:7777
+    checkCookie: /v1/sso/service/check/cookie
+  socketio:
+    server:
+      host: localhost
+      port: 8091
+spring:
+  application:
+    name: message-center
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    password: root
+    url: jdbc:mysql://127.0.0.1:3306/bbs?useUnicode=true&characterEncoding=utf8
+    username: root
+  redis:
+    database: 1
+    host: 127.0.0.1
+    password: ''
+    pool:
+      max-active: 8
+      max-idle: 8
+      max-wait: -1
+      min-idle: 0
+    port: 6379
+    timeout: 0
+  sleuth:
+    enabled: true
+    sampler:
+      probability: 1.0
+  zipkin:
+    base-url: http://localhost:9411/
+
+logging:
+  config: F:\callChain\zipkin-demo\message-center\message-center-main\src\main\resources\logback.xml

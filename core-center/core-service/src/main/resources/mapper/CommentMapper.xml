@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.frank.cloud.bbs.core.service.dao.CommentDao">
+
+    <!-- 评论帖子 -->
+    <insert id="insertComment"
+            parameterType="com.frank.cloud.bbs.core.common.model.DO.comment.CommentDB">
+        INSERT INTO t_bbs_comment
+        (article_id,author,content,create_time,update_time,anonymous,delete_tag)
+        VALUES (
+        #{articleId},
+        #{author},
+        #{content},
+        #{createTime},
+        #{updateTime},
+        #{anonymous},
+        0
+        )
+        <selectKey resultType="Long" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() AS id
+        </selectKey>
+    </insert>
+
+    <!-- 更新评论 -->
+    <update id="updateComment"
+            parameterType="com.frank.cloud.bbs.core.common.model.DO.comment.CommentDB">
+        UPDATE t_bbs_comment
+        <set>
+            <if test="content != null">content = #{content},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="deleteTag != null">delete_tag = #{deleteTag}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <!-- 根据文章id获取评论列表 -->
+    <select id="getCommentByPage" parameterType="Long"
+            resultType="com.frank.cloud.bbs.core.common.model.DTO.CommentDTO">
+       SELECT
+       t1.id          commentId,
+       t1.article_id articleId,
+       t1.content     content,
+       t1.create_time createTime,
+       t1.update_time updateTime,
+       t1.anonymous anonymous,
+       t1.delete_tag deleteTag,
+       t2.user_id     author,
+       t2.nick_name   nickName,
+       t2.avatar      avatar,
+       t2.signature   signature,
+       ifnull(t4.like_num,0)     likeNum
+       FROM  t_bbs_comment t1 LEFT JOIN
+       t_bbs_user t2 ON  t1.author = t2.user_id LEFT JOIN
+       (SELECT
+               t3.operator_id,
+               count(*) as like_num
+        FROM t_bbs_operator t3
+        WHERE t3.type = 2
+        GROUP BY t3.operator_id, t3.type) AS t4 ON t1.id = t4.operator_id
+        WHERE  t1.article_id = #{articleId}
+        ORDER BY t1.create_time ASC
+	</select>
+	
+	<select id="getCommentByCondition" parameterType="com.frank.cloud.bbs.core.common.model.DO.comment.CommentDB"
+            resultType="com.frank.cloud.bbs.core.common.model.DTO.CommentDTO">
+       SELECT
+       t1.id          commentId,
+       t1.article_id articleId,
+       t1.content     content,
+       t1.create_time createTime,
+       t1.update_time updateTime,
+       t1.anonymous anonymous,
+       t1.delete_tag deleteTag,
+       t2.user_id     author,
+       t2.nick_name   nickName,
+       t2.avatar      avatar,
+       t2.signature   signature,
+       ifnull(t4.like_num,0)     likeNum
+       FROM  t_bbs_comment t1 LEFT JOIN
+       t_bbs_user t2 ON  t1.author = t2.user_id LEFT JOIN
+       (SELECT
+               t3.operator_id,
+               count(*) as like_num
+        FROM t_bbs_operator t3
+        WHERE t3.type = 2
+        GROUP BY t3.operator_id, t3.type
+        ) AS t4 ON t1.id = t4.operator_id
+        WHERE  t1.article_id = #{articleId}
+        <if test="author != null">AND t1.author = #{author}</if>
+        <if test="anonymous != null">AND t1.anonymous = #{anonymous}</if>
+        ORDER BY t1.create_time ASC
+	</select>
+
+    <!-- 根据条件获取评论条数 -->
+    <select id="countCommentByCondition" parameterType="hashmap"
+            resultType="Integer">
+		SELECT count(id) from t_bbs_comment
+		WHERE article_id = #{articleId}
+	</select>
+
+    <select id="getCommentInfo" parameterType="long"
+            resultType="com.frank.cloud.bbs.core.common.model.DTO.CommentDTO">
+		SELECT id commentId,
+		article_id articleId,
+		content content,
+		author author,
+		create_time createTime,
+		delete_tag deleteTag,
+		update_time updateTime
+		FROM t_bbs_comment
+		WHERE id = #{id}
+	</select>
+
+    <select id="getCommentPage" parameterType="hashmap" resultType="Integer">
+		select a.rownum from (
+		select @rownum:=@rownum+1 rownum ,t.*
+		from (
+		select @rownum:=0,b.*
+		from t_bbs_comment b
+		where article_id = #{articleId}
+		order by b.create_time asc
+		)t ) a where a.id = #{id}
+	</select>
+
+    <delete id = "deleteCommentById" parameterType="long">
+       DELETE FROM t_bbs_comment WHERE id = #{id}
+    </delete>
+    
+    <select id = "getAllIdByArtId" parameterType="long" resultType="Long">
+       SELECT id FROM t_bbs_comment WHERE article_id = #{articleId}
+    </select>
+    
+    <select id = "getNickName" parameterType="string" resultType="String">
+       SELECT nick_name FROM t_bbs_user WHERE user_id = #{userId}
+    </select>
+</mapper>

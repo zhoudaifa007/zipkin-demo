@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: api-gateway
+  sleuth:
+    enabled: true
+    sampler:
+      probability: 1.0
+  zipkin:
+    base-url: http://localhost:9411/
+
+server:
+  port: 8112
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8111/eureka/
+  instance:
+    lease-expiration-duration-in-seconds: 15
+    lease-renewal-interval-in-seconds: 5
+
+zuul:
+   routes:
+      message-center:
+         path: /v1/bbs/message/**
+         serviceId: message-center
+         stripPrefix: false
+      core-center:
+         path: /v1/bbs/core/**
+         serviceId: core-center
+         stripPrefix: false
+      user-center:
+         path: /v1/bbs/user/**
+         serviceId: user-center
+         stripPrefix: false
+   sensitiveHeaders:
+
+sso:
+  host: 'http://localhost'
+  port: '18550'
+
+ignore:
+    urls:
+        - /v1/bbs/user/auth/login
+        - /v1/bbs/user/auth/logout
+        - /v1/bbs/core/forum/list
+        - /v1/bbs/core/forum/moderator
+        - /v1/bbs/core/article/comments
+        - /v1/bbs/core/comment/replys
+        - /v1/bbs/core/notice
+        - /v1/bbs/core/article/list
+        - /v1/bbs/core/article/operate/list
+
+#日志
+logging:
+    config: F:\callChain\zipkin-demo\api-gateway\src\main\resources\logback.xml
+

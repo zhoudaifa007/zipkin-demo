@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.frank.cloud.bbs.core.service.dao.OperationDao">
+
+   <!-- 新增点赞信息 -->
+   <insert id="insertOper" parameterType = "com.frank.cloud.bbs.core.common.model.DO.OperationDO">
+       INSERT INTO t_bbs_operator
+       (operator_id,type,author,create_time,update_time)
+       VALUES (
+          #{articleId},
+          #{type},
+          #{author},
+          #{createTime},
+          #{updateTime}
+       )
+       <selectKey resultType="Long" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() AS id
+       </selectKey>
+   </insert>
+   
+   <!-- 统计点赞信息 -->
+   <select id = "countOper" parameterType = "com.frank.cloud.bbs.core.common.model.DO.OperationDO" resultType = "Integer">
+      SELECT count(id) FROM t_bbs_operator
+      <where>
+        <if test = "articleId != null">operator_id = #{articleId}</if>
+        <if test = "type != null">AND type = #{type}</if>
+        <if test = "author != null">AND author = #{author}</if>
+      </where>
+   </select>
+
+    <select id="countOperByUserId"  resultType="int">
+        SELECT count(1)
+        FROM v_bbs_user_like
+        <where>
+            <if test = "type != null">type = #{type}</if>
+            <if test = "author != null">AND author = #{author}</if>
+        </where>
+    </select>
+    
+    <select id="getOIdByCon"  parameterType = "com.frank.cloud.bbs.core.common.model.DO.OperationDO" resultType="Long">
+        SELECT id FROM t_bbs_operator
+        WHERE type = #{type} AND author = #{author} AND operator_id = #{articleId}
+    </select>
+    
+    <delete id = "deleteOper" parameterType = "long">
+       DELETE FROM t_bbs_operator where id = #{id}
+    </delete>
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.frank.cloud.bbs.core.service.dao.FollowDao">
+
+	<!-- 新增关注信息 -->
+	<insert id="insertFollow" parameterType="com.frank.cloud.bbs.core.common.model.DO.FollowDO">
+		INSERT INTO t_bbs_follow
+		(follower_id,followed_id,follow_type)
+		VALUES (
+		#{followerId},
+		#{followedId},
+		#{type}
+		)
+		<selectKey resultType="Long" order="AFTER" keyProperty="id">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+	</insert>
+
+	<!-- 统计关注信息 -->
+	<select id="countFollw" parameterType="com.frank.cloud.bbs.core.common.model.DO.FollowDO"
+		resultType="Integer">
+		SELECT count(id) FROM t_bbs_follow
+		<where>
+			<if test="followedId!= null">followed_id = #{followedId}</if>
+			<if test="type != null">AND follow_type = #{type}</if>
+			<if test="followerId != null">AND follower_id = #{followerId}</if>
+		</where>
+	</select>
+
+	<select id="listUserFollowing" resultType="com.frank.cloud.bbs.core.common.model.DTO.UserDTO">
+		SELECT
+		u.user_id userId,
+		u.nick_name nickName,
+		u.signature signature,
+		u.avatar avatar
+		FROM t_bbs_follow f
+		LEFT JOIN t_bbs_user u
+		ON f.followed_id = u.user_id
+		WHERE f.follow_type = 2
+		AND f.follower_id = #{userId}
+		<if test="nickName != null">
+			AND u.nick_name LIKE "%"#{nickName}"%"
+		</if>
+	</select>
+
+	<delete id="deleteFollow" parameterType="com.frank.cloud.bbs.core.common.model.DO.FollowDO">
+		DELETE FROM t_bbs_follow
+		<where>
+			<if test="followedId!= null">followed_id = #{followedId}</if>
+			<if test="type != null">AND follow_type = #{type}</if>
+			<if test="followerId != null">AND follower_id = #{followerId}</if>
+		</where>
+	</delete>
+
+	<select id="getUserByCondition" parameterType="com.frank.cloud.bbs.core.common.model.DO.FollowDO" resultType="String">
+		SELECT follower_id FROM t_bbs_follow
+		<where>
+			<if test="followedId!= null">followed_id = #{followedId}</if>
+			<if test="type != null">AND follow_type = #{type}</if>
+		</where>
+	</select>
+
+</mapper>

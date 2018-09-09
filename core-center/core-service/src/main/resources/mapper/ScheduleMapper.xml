@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.frank.cloud.bbs.core.service.dao.ScheduleDao">
+
+	<insert id="insertScheduleBus"
+		parameterType="com.frank.cloud.bbs.core.common.model.DO.schedule.AddScheduleDO">
+		INSERT INTO t_bbs_scheduled_bus
+		(title,memo,create_time,end_time,article_id)
+		VALUES (
+		#{title},
+		#{content},
+		#{createTime},
+		#{activeTime},
+		#{articleId}
+		)
+		<selectKey resultType="Long" order="AFTER" keyProperty="id">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+	</insert>
+
+	<insert id="insertBusUser"
+		parameterType="com.frank.cloud.bbs.core.common.model.DO.schedule.AddBusUserDO">
+		INSERT INTO t_bbs_bus_user
+		(user_id,bus_id,aborad,memo)
+		VALUES (
+		#{userId},
+		#{busId},
+		#{aborad},
+		#{memo}
+		)
+		<selectKey resultType="Long" order="AFTER" keyProperty="id">
+			SELECT LAST_INSERT_ID() AS id
+		</selectKey>
+	</insert>
+
+	<update id="updateScheduleBus"
+		parameterType="com.frank.cloud.bbs.core.common.model.DO.schedule.AddScheduleDO">
+		UPDATE t_bbs_scheduled_bus
+		<set>
+			<if test="title != null">title = #{title},</if>
+			<if test="articleId != null">article_id = #{articleId}</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateBusUser"
+		parameterType="com.frank.cloud.bbs.core.common.model.DO.schedule.AddBusUserDO">
+		UPDATE t_bbs_bus_user
+		<set>
+			<if test="aborad != null">aborad = #{aborad},</if>
+			<if test="memo != null">memo = #{memo}</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+
+	<select id="getScheduleBus" parameterType="hashmap"
+		resultType="com.frank.cloud.bbs.core.common.model.DO.schedule.ScheduleBusDO">
+		SELECT t1.id id,
+		t2.title title,
+		t2.id articleId,
+		t2.forum_id forumId,
+		date_format(t1.create_time,'%Y-%c-%d %H:%i:%s') createTime,
+		date_format(t1.end_time,'%Y-%c-%d %H:%i:%s') endTime
+		FROM t_bbs_scheduled_bus t1,
+		t_bbs_article t2
+		WHERE t1.article_id = t2.id
+		ORDER BY t1.create_time DESC
+		limit
+		#{index},#{pageSize}
+	</select>
+	
+	<select id="getSchedule" parameterType="long"
+		resultType="com.frank.cloud.bbs.core.common.model.DO.schedule.ScheduleBusDO">
+		SELECT id id,
+		title title,
+		memo memo,
+		article_id articleId,
+		date_format(create_time,'%Y-%c-%d %H:%i:%s') createTime,
+		date_format(end_time,'%Y-%c-%d %H:%i:%s') endTime
+		FROM t_bbs_scheduled_bus
+		WHERE id = #{id}
+	</select>
+
+	<select id="countScheduleBus" resultType="Integer">
+		SELECT count(id) FROM
+		t_bbs_scheduled_bus
+		where article_id > 0
+	</select>
+
+	<select id="getBusUser" parameterType="hashmap"
+		resultType="com.frank.cloud.bbs.core.common.model.DO.schedule.BusUserDO">
+		SELECT id id,
+		user_id userId,
+		aborad aborad,
+		memo memo
+		FROM
+		t_bbs_bus_user
+		WHERE bus_id = #{id}
+		<if test="index != null">limit #{index},#{pageSize}</if>
+	</select>
+	
+	<select id = "countBusUser" parameterType="long" resultType = "Integer">
+	    SELECT count(id) FROM
+		t_bbs_bus_user
+		WHERE bus_id = #{id}
+	</select>
+
+	<select id="getScheduleInfo" parameterType="long" resultType="Date">
+		SELECT end_time FROM t_bbs_scheduled_bus WHERE id = #{id}
+	</select>
+
+	<select id="getBusUserInfo" parameterType="hashmap"
+		resultType="com.frank.cloud.bbs.core.common.model.DO.schedule.BusUserDO">
+		SELECT id id,
+		user_id userId,
+		aborad aborad,
+		memo memo
+		FROM
+		t_bbs_bus_user
+		WHERE user_id = #{userId}
+		AND bus_id = #{busId}
+	</select>
+
+	<delete id="delScheduleBus" parameterType="long">
+		DELETE FROM t_bbs_scheduled_bus WHERE id = #{id}
+	</delete>
+
+	<delete id="delBusUserByBusId" parameterType="long">
+		DELETE FROM t_bbs_bus_user WHERE bus_id = #{id}
+	</delete>
+
+	<select id="getAllUserById" parameterType="long" resultType="String">
+	    SELECT user_id FROM t_bbs_bus_user WHERE bus_id = #{id}
+	</select>
+	
+	<select id="getTitleByBusId" parameterType="long" resultType="String">
+	    SELECT title FROM t_bbs_scheduled_bus WHERE id = #{id}
+	</select>
+	
+	<select id="getArtIdByBusId" parameterType="long" resultType="Long">
+	    SELECT article_id FROM t_bbs_scheduled_bus WHERE id = #{id}
+	</select>
+	
+	<select id="getIdByArtId" parameterType="long" resultType="Long">
+	    SELECT id FROM t_bbs_scheduled_bus WHERE article_id = #{id}
+	</select>
+
+</mapper>

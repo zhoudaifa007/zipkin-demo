@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.frank.cloud.bbs.core.service.dao.ReplyDao">
+
+
+    <!-- 回复评论 -->
+    <insert id="insertReply"
+            parameterType="com.frank.cloud.bbs.core.common.model.DO.ReplyDO">
+        INSERT INTO t_bbs_reply
+        (comment_id,parent_id,replier,marker,content,create_time,update_time,anonymous,delete_tag)
+        VALUES (
+        #{commentId},
+        #{parentId},
+        #{replier},
+        #{marker},
+        #{content},
+        #{createTime},
+        #{updateTime},
+        #{anonymous},
+        0
+        )
+        <selectKey resultType="Long" order="AFTER" keyProperty="replyId">
+            SELECT LAST_INSERT_ID() AS id
+        </selectKey>
+    </insert>
+
+
+    <!-- 更新回复 -->
+    <update id="updateReply"
+            parameterType="com.frank.cloud.bbs.core.common.model.DO.ReplyDO">
+        UPDATE t_bbs_reply
+        <set>
+            <if test="content != null">content = #{content},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="deleteTag != null">delete_tag = #{deleteTag}</if>
+        </set>
+        WHERE id = #{replyId}
+    </update>
+
+
+    <!-- 根据条件获取回复 -->
+    <select id="getReplyByCondition" parameterType="hashmap"
+            resultType="com.frank.cloud.bbs.core.common.model.DO.ReplyDO">
+        SELECT t1.id replyId,
+        t1.content content,
+        t1.create_time createTime,
+        t1.update_time updateTime,
+        t1.delete_tag deleteTag,
+        t2.nick_name replier,
+        t2.avatar avatar,
+        t2.signature signature
+        FROM t_bbs_reply t1,
+        t_bbs_user t2
+        WHERE t1.replier = t2.user_id
+        <if test="commentId != null">AND t1.comment_id = #{commentId}</if>
+        <if test="type != null">AND t1.type = #{type}</if>
+        ORDER BY t1.create_time ASC
+        <if test="index != null">limit #{index},#{pageSize}</if>
+    </select>
+
+    <select id="countReplyByCondition" parameterType="hashmap"
+            resultType="Integer">
+        SELECT count(id) from t_bbs_reply
+        <where>
+            <if test="commentId != null">comment_id = #{commentId}</if>
+            <if test="parentId != null">AND parent_id = #{parentId}</if>
+            <if test="replier != null">AND replier = #{replier}</if>
+            <if test="marker != null">AND marker = #{marker}</if>
+        </where>
+    </select>
+
+
+    <select id="getReplyInfo" parameterType="long"
+            resultType="com.frank.cloud.bbs.core.common.model.DO.ReplyDO">
+        SELECT id replyId,
+        comment_id commentId,
+        replier replier,
+        marker marker,
+        delete_tag deleteTag,
+        parent_id parentId
+        FROM t_bbs_reply
+        WHERE id = #{id}
+    </select>
+
+    <select id="getReplyPage" parameterType="hashmap" resultType="Integer">
+        select a.rownum from (
+        select @rownum:=@rownum+1 rownum ,t.*
+        from (
+        select @rownum:=0,b.*
+        from t_bbs_reply b
+        where b.comment_id = #{commentId}
+        order by b.create_time asc
+        )t ) a where a.id = #{id}
+    </select>
+
+    <select id="getReplyInfoByCommentId" resultType="com.frank.cloud.bbs.core.common.model.DTO.ReplyInfoDTO">
+        SELECT
+        id id,
+        comment_id commentId,
+        content content,
+        create_time createTime,
+        update_time updateTime,
+        replier replier,
+        delete_tag deleteTag,
+        replier_nick_name replierNickName,
+        replier_avatar replierAvatar,
+        replier_anonymous replierAnonymous,
+        marker marker,
+        marker_nick_name markerNickName,
+        marker_avatar markerAvatar,
+        marker_anonymous markerAnonymous
+        FROM v_bbs_reply
+        WHERE comment_id = #{commentId}
+        order by create_time asc
+    </select>
+    
+    <delete id = "deleteReplyByCommentId" parameterType = "long">
+        DELETE FROM t_bbs_reply WHERE comment_id = #{commentId}
+    </delete>
+</mapper>
